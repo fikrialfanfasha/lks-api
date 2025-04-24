@@ -80,5 +80,27 @@ class AuthController extends Controller
             ]
         ]);
     }
+    public function logout(Request $request)
+{
+    $authHeader = $request->header('Authorization');
+
+    if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
+    }
+
+    $token = substr($authHeader, 7);
+
+    $user = \App\Models\User::where('api_token', $token)->first();
+
+    if (!$user) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
+    }
+
+    $user->api_token = null;
+    $user->save();
+
+    return response()->json(['message' => 'Logout success']);
+}
+
 }
 
