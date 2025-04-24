@@ -47,5 +47,38 @@ class AuthController extends Controller
             ]
         ], 201);
     }
+    public function login(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::where('username', $request->username)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Wrong username or password'
+            ], 401);
+        }
+
+        $token = Str::random(60);
+
+        $user->api_token = $token;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Login success',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'full_name' => $user->full_name,
+                'username' => $user->username,
+                'bio' => $user->bio,
+                'is_private' => $user->is_private,
+                'created_at' => $user->created_at
+            ]
+        ]);
+    }
 }
 
